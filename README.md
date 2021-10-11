@@ -45,12 +45,22 @@ codeField.doAfterCodeDidEnter = { code in
 let codeField = SWCodeField(blocks: 2, elementsInBlock: 3)
 ```
  
- - Разместите элемент на сцене любым удобным для вас способом, например
+ - Укажите размер и расположение элемента любым удобным способом:
  
+ Через frame
 ```swift
 self.view.addSubview(codeField)
 codeField.frame.size = CGSize(width: 200, height: 50)
 codeField.center = view.center
+```
+
+С помощью SnapKit
+```swift
+codeField.snp.makeConstraints { make in
+    make.centerY.centerX.equalToSuperview()
+    make.leadingMargin.trailingMargin.equalTo(40)
+    make.height.equalTo(50)
+}
 ```
  
  - Задайте обработчик, который вызывается после заполнения всех текстовых полей (свойство `doAfterCodeDidEnter`).
