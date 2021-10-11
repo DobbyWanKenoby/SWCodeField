@@ -16,6 +16,25 @@
 - iOS 14+
 - UIKit (поддержки SwiftUI нет)
 
+## Установка
+
+### Swift Package Manager
+
+#### Вариант 1.
+
+- В Xcode перейдите к `File | Add Packages ...` и введите адрес `https://github.com/DobbyWanKenoby/SWCodeField` в поисковом поле.
+- Укажите необходимую версию и нажмите `Add Package`.
+
+#### Вариант 2.
+
+Добавьте в качестве зависимости в файл `Package.swift` следующий код:
+
+```
+dependencies: [
+    .package(url: "https://github.com/DobbyWanKenoby/SWCodeField", .upToNextMajor(from: "1.0"))
+]
+```
+
 ## Использование
 
 ### Использование с помощью Storyboard
