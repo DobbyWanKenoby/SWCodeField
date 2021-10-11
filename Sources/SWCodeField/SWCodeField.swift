@@ -10,9 +10,10 @@ open class SWCodeField: UIStackView {
     // MARK: API
     
     /// Выполняется после того, как заполняются все текстовые поля
-    var onCodeEntered: (() -> Void)?
+    // Принимает code в качестве входного значения
+    public var doAfterCodeDidEnter: ((String) -> Void)?
     /// Введенный код
-    var code: String {
+    public var code: String {
         enteredCode.map { String($0) }.joined()
     }
     
@@ -123,7 +124,7 @@ open class SWCodeField: UIStackView {
                 self.textFields[lastFieldIndex].becomeFirstResponder()
             } else {
                 self.textFields.last?.resignFirstResponder()
-                self.onCodeEntered?()
+                self.doAfterCodeDidEnter?(self.code)
             }
         }
         return action
