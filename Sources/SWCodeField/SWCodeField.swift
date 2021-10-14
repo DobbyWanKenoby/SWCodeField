@@ -12,36 +12,54 @@ open class SWCodeField: UIStackView {
     /// Выполняется после того, как заполняются все текстовые поля
     // Принимает code в качестве входного значения
     public var doAfterCodeDidEnter: ((String) -> Void)?
-    /// Введенный код
+    /// Код в текстовых полях
     public var code: String {
-        enteredCode.map { String($0) }.joined()
+        get {
+            enteredCode.map { String($0) }.joined()
+        }
+        set {
+            for (index, symbol) in newValue.enumerated() {
+                textFields[index].value?.text = "\(symbol)"
+            }
+        }
     }
     
     // MARK: Properties
     
     // количество блоков с текстовыми полями
     @IBInspectable
-    var blocks: Int = 0
+    private var blocks: Int = 0 {
+        didSet {
+            createBlocks()
+        }
+    }
     // количество текстовых полей в каждом блоке
     @IBInspectable
-    private var elementsInBlock: Int = 0
+    private var elementsInBlock: Int = 0 {
+        didSet {
+            createBlocks()
+        }
+    }
     
     private var enteredCode: [Int] {
         var resultNumbers = [Int]()
         textFields.forEach { textField in
-            if let text = textField.text, let number = Int(text) {
+            if let text = textField.value?.text, let number = Int(text) {
                 resultNumbers.append(number)
             }
         }
         return resultNumbers
     }
     
-    private var textFields: [UITextField] = []
-    
-    open override func draw(_ rect: CGRect) {
-        super.draw(rect)
-        createBlocks()
+    // Wrapper для хранения слабых ссылок на текстовые поля
+    class TFWrapper {
+        weak var value: UITextField?
+        init(_ tf: UITextField) {
+            value = tf
+        }
     }
+    
+    private var textFields: [TFWrapper] = []
     
     convenience public init(blocks: Int, elementsInBlock: Int) {
         
@@ -54,11 +72,19 @@ open class SWCodeField: UIStackView {
         self.blocks = blocks
         self.elementsInBlock = elementsInBlock
         
+        createBlocks()
         configureMainStackView()
     }
     
     // Создание блоков, включая вложенные элементы
     private func createBlocks() {
+        guard blocks > 0, elementsInBlock > 0 else {
+            return
+        }
+        
+        removeArrangedViews()
+        textFields.removeAll()
+        
         // создание блоков
         (1...blocks).forEach { _ in
             let block = getBlockStackView()
@@ -66,7 +92,7 @@ open class SWCodeField: UIStackView {
             (1...elementsInBlock).forEach { elementIndex in
                 // текстовое поле
                 let textField = getTextField()
-                textFields.append(textField)
+                textFields.append(TFWrapper(textField))
 
                 // stack для объединения поля и линии
                 let stackView = UIStackView(arrangedSubviews: [textField, getBottomLine()])
@@ -77,6 +103,12 @@ open class SWCodeField: UIStackView {
                 block.addArrangedSubview(stackView)
             }
             self.addArrangedSubview(block)
+        }
+    }
+    
+    private func removeArrangedViews() {
+        for view in arrangedSubviews {
+            view.removeFromSuperview()
         }
     }
     
@@ -103,7 +135,7 @@ open class SWCodeField: UIStackView {
         textField.onDeleteBackward = {
             self.removeLastNumber()
             let lastFieldIndex = self.enteredCode.count
-            self.textFields[lastFieldIndex].becomeFirstResponder()
+            self.textFields[lastFieldIndex].value?.becomeFirstResponder()
         }
         textField.keyboardType = .numberPad
         textField.addAction(getActionFor(textField: textField), for: .editingChanged)
@@ -121,9 +153,9 @@ open class SWCodeField: UIStackView {
             }
             let lastFieldIndex = self.enteredCode.count
             if lastFieldIndex < self.textFields.count && lastFieldIndex > 0  {
-                self.textFields[lastFieldIndex].becomeFirstResponder()
+                self.textFields[lastFieldIndex].value?.becomeFirstResponder()
             } else {
-                self.textFields.last?.resignFirstResponder()
+                self.textFields.last?.value?.resignFirstResponder()
                 self.doAfterCodeDidEnter?(self.code)
             }
         }
@@ -144,8 +176,8 @@ open class SWCodeField: UIStackView {
     // Удаляет символ из последнего заполненного текстового поля
     private func removeLastNumber() {
         for textField in textFields.reversed() {
-            if let text = textField.text, text != "" {
-                textField.text =  ""
+            if let text = textField.value?.text, text != "" {
+                textField.value!.text =  ""
                 return
             }
         }
@@ -156,11 +188,11 @@ open class SWCodeField: UIStackView {
     private func activateCorrectTextField() {
         let lastFieldIndex = self.enteredCode.count
         if lastFieldIndex == textFields.count {
-            self.textFields.last?.becomeFirstResponder()
+            self.textFields.last?.value?.becomeFirstResponder()
         } else if lastFieldIndex == 0 {
-            self.textFields.first?.becomeFirstResponder()
+            self.textFields.first?.value?.becomeFirstResponder()
         } else {
-            self.textFields[lastFieldIndex].becomeFirstResponder()
+            self.textFields[lastFieldIndex].value?.becomeFirstResponder()
         }
     }
 

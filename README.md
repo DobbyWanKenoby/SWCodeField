@@ -35,6 +35,10 @@ dependencies: [
 ]
 ```
 
+### Вручную
+
+Добавьте в собственный проект код из файла Sources/SWCodeField/SWCodeField.swift
+
 ## Использование
 
 ### Использование с помощью Storyboard
@@ -88,6 +92,18 @@ codeField.snp.makeConstraints { make in
 codeField.doAfterCodeDidEnter = { code in
     print("Code is \(code)")
 }
+```
+
+## API
+
+```swift
+// Замыкание, которое выполняется после того, когда введены значения для всех полей
+// В качестве входного параметра получает введнный код в виде строки
+var doAfterCodeDidEnter: ((String) -> Void)? { get set }
+
+// Код в текстовых полях
+// Может быть как прочитано, так и установлено
+var code: String { get set }
 ```
  
 ## TODO
